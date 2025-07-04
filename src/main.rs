@@ -16,9 +16,6 @@ fn main() -> Result<()> {
         } else {
             //throw an error
         }
-
-        
-        if dir.dire
     }
 
     println!("I'mma I'mma Compressorizer, Compressorizer");
