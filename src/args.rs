@@ -8,7 +8,7 @@ use clap::Parser;
 )]
 pub struct CliArgs {
     #[arg(short, long, conflicts_with = "directory")]
-    files: Vec<String>,
+    pub files: Vec<String>,
     #[arg(short, long, conflicts_with = "files")]
-    directory: Option<String>,
+    pub directory: Option<String>,
 }
