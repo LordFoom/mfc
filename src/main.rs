@@ -4,6 +4,7 @@ use args::CliArgs;
 use clap::Parser;
 
 mod args;
+mod compressor;
 use anyhow::Result;
 
 fn main() -> Result<()> {
