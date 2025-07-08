@@ -1,4 +1,5 @@
 use anyhow::{Context, Error, Result};
+use std::io::Read;
 use std::{
     fmt::{Result, format},
     fs::File,
@@ -30,4 +31,8 @@ pub fn compress_directory(dir_path: &Path) -> Result<()> {
     Ok(())
 }
 
-pub fn compress_file(file_path: &Path) -> Result<()> {}
+pub fn compress_file(file_path: &Path) -> Result<()> {
+    let f = File::open(file_path)?;
+    let mut buffer = Vec::new();
+    f.read_to_end(&mut buffer);
+}
