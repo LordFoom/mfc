@@ -1,5 +1,7 @@
-use anyhow::{Context, Error, Result};
-use std::io::Read;
+use anyhow::{Context, anyhow};
+use flate2::Compression;
+use flate2::write::GzEncoder;
+use std::io::{BufReader, BufWriter, Read};
 use std::{
     fmt::{Result, format},
     fs::File,
@@ -8,8 +10,11 @@ use std::{
 
 pub fn compress_directory(dir_path: &Path) -> Result<()> {
     if !dir_path.exists() {
-        let err_msg = format!("Directory {} does not exist", dir_path.to_str());
-        return Err(anyhow::Error::new(err_msg));
+        let err_msg = format!(
+            "Directory {} does not exist",
+            dir_path.to_str().unwrap_or("<invalid UTF-8 path>")
+        );
+        return Err(anyhow!(err_msg));
     }
     std::fs::read_dir(dir_path)?
         .into_iter()
@@ -32,7 +37,11 @@ pub fn compress_directory(dir_path: &Path) -> Result<()> {
 }
 
 pub fn compress_file(file_path: &Path) -> Result<()> {
-    let f = File::open(file_path)?;
-    let mut buffer = Vec::new();
-    f.read_to_end(&mut buffer);
+    let source = File::open(file_path)?;
+    let sink = File::create_new(file_path.with_extension("gz"))?;
+    let mut reader = BufReader::new(source);
+    let mut writer = GzEncoder::new(BufWriter::new(sink), Compression::default());
+    std::io::copy(&mut reader, &mut writer);
+    writer.finish();
+    Ok(())
 }
