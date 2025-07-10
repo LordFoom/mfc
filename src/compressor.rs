@@ -1,12 +1,8 @@
-use anyhow::{Context, anyhow};
+use anyhow::{Context, Result, anyhow};
 use flate2::Compression;
 use flate2::write::GzEncoder;
 use std::io::{BufReader, BufWriter, Read};
-use std::{
-    fmt::{Result, format},
-    fs::File,
-    path::Path,
-};
+use std::{fmt::format, fs::File, path::Path};
 
 pub fn compress_directory(dir_path: &Path) -> Result<()> {
     if !dir_path.exists() {
@@ -18,7 +14,7 @@ pub fn compress_directory(dir_path: &Path) -> Result<()> {
     }
     std::fs::read_dir(dir_path)?
         .into_iter()
-        .try_for_each(|dir_entry_result| {
+        .try_for_each::<_, Result<_, anyhow::Error>>(|dir_entry_result| {
             let dir_entry =
                 dir_entry_result.with_context(|| format!("Failed to read entry {:?}", dir_path))?;
 
@@ -27,12 +23,12 @@ pub fn compress_directory(dir_path: &Path) -> Result<()> {
                 .with_context(|| format!("Failed to get metadata for {:?}", dir_path))?;
 
             if metadata.is_dir() {
-                compress_directory(dir_entry.path().as_path());
+                compress_directory(dir_entry.path().as_path())?;
             } else {
-                compress_file(dir_entry.path().as_path());
+                compress_file(dir_entry.path().as_path())?;
             };
             Ok(())
-        });
+        })?;
     Ok(())
 }
 
