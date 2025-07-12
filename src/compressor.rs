@@ -39,11 +39,54 @@ pub fn compress_directory(dir_path: &Path) -> Result<()> {
 }
 
 pub fn compress_file(file_path: &Path) -> Result<()> {
+    println!("Compressing {:?}", file_path);
     let source = File::open(file_path)?;
-    let sink = File::create_new(file_path.with_extension("gz"))?;
+    let compressed_path = file_path.with_extension("gz");
+    let compressed_file_name = compressed_path
+        .file_name()
+        .ok_or(anyhow!("Could not get the file name??"))?;
+    let sink = File::create_new(&compressed_path)?;
     let mut reader = BufReader::new(source);
     let mut writer = GzEncoder::new(BufWriter::new(sink), Compression::default());
-    std::io::copy(&mut reader, &mut writer);
-    writer.finish();
+    std::io::copy(&mut reader, &mut writer)?;
+    writer.finish()?;
+    println!("Compressed file {:?}", compressed_file_name);
     Ok(())
+}
+
+#[allow(unused_imports)]
+mod test {
+    use std::{env, fs, io::Write};
+
+    use super::compress_file;
+    use anyhow::Result;
+    use tempfile::NamedTempFile;
+
+    #[test]
+    pub fn test_compress_file() -> Result<()> {
+        //need a test file
+        let mut test_file = NamedTempFile::new()?;
+        let test_content =
+            "I am the test content, i live within the test file, i am read by the test people\n";
+        let test_content_ten_k = test_content.repeat(10000);
+        test_file.write_all(test_content_ten_k.as_bytes())?;
+        let test_file_path = test_file.path();
+        compress_file(&test_file_path)?;
+        let test_file_gz = test_file_path.with_extension(".gz");
+        assert!(test_file_gz.exists(), "Compressed file should exist");
+        //Verify the compressed file has some content
+        let compressed_size = fs::metadata(&test_file_gz)?.len();
+        assert!(compressed_size > 0, "Compressed file should not be empty");
+
+        //Verify it's actually compressed (should be smaller for this content)
+        let original_size = fs::metadata(&test_file_path)?.len();
+        println!(
+            "Original size: {}, Compressed size: {}",
+            original_size, compressed_size
+        );
+
+        //Clean up the compressed file (temp_file cleans up automatically)
+        fs::remove_file(&test_file_gz)?;
+        Ok(())
+    }
 }
