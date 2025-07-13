@@ -1,9 +1,9 @@
-use anyhow::{Context, Result, anyhow};
+use anyhow::{Result, anyhow};
+use flate2::Compression;
 use flate2::write::GzEncoder;
-use flate2::{Compression, write};
 use rayon::prelude::*;
 use std::fs;
-use std::io::{BufReader, BufWriter, Read};
+use std::io::{BufReader, BufWriter};
 use std::{fs::File, path::Path};
 
 pub fn compress_directory(dir_path: &Path) -> Result<()> {
@@ -54,7 +54,7 @@ pub fn compress_file(file_path: &Path) -> Result<()> {
     Ok(())
 }
 
-#[allow(unused_imports)]
+#[allow(unused_im)]
 mod test {
     use std::{env, fs, io::Write};
 
@@ -72,7 +72,7 @@ mod test {
         test_file.write_all(test_content_ten_k.as_bytes())?;
         let test_file_path = test_file.path();
         compress_file(&test_file_path)?;
-        let test_file_gz = test_file_path.with_extension(".gz");
+        let test_file_gz = test_file_path.with_extension("gz");
         assert!(test_file_gz.exists(), "Compressed file should exist");
         //Verify the compressed file has some content
         let compressed_size = fs::metadata(&test_file_gz)?.len();
