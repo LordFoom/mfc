@@ -54,7 +54,7 @@ pub fn compress_file(file_path: &Path) -> Result<()> {
     Ok(())
 }
 
-#[allow(unused_im)]
+#[allow(unused_imports)]
 mod test {
     use std::{env, fs, io::Write};
 
