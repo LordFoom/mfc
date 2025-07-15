@@ -6,7 +6,11 @@ use std::fs;
 use std::io::{BufReader, BufWriter};
 use std::{fs::File, path::Path};
 
-pub fn compress_directory(dir_path: &Path) -> Result<()> {
+///Compresses directory contents into SINGLE file
+pub fn compress_directory(dir_path: &Path) -> Result<()> {}
+
+///Compresses each file, separately, in the directory
+pub fn compress_directory_files(dir_path: &Path) -> Result<()> {
     if !dir_path.exists() {
         let err_msg = format!(
             "Directory {} does not exist",
@@ -29,7 +33,7 @@ pub fn compress_directory(dir_path: &Path) -> Result<()> {
             let metadata = fs::metadata(dir_entry)?;
 
             if metadata.is_dir() {
-                compress_directory(dir_entry)?;
+                compress_directory_files(dir_entry)?;
             } else {
                 compress_file(dir_entry)?;
             };
