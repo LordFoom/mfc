@@ -7,7 +7,11 @@ use std::io::{BufReader, BufWriter};
 use std::{fs::File, path::Path};
 
 ///Compresses directory contents into SINGLE file
-pub fn compress_directory(dir_path: &Path) -> Result<()> {}
+pub fn compress_directory(dir_path: &Path) -> Result<()> {
+    let tar_name = dir_path.with_extension("gz");
+
+    Ok(())
+}
 
 ///Compresses each file, separately, in the directory
 pub fn compress_directory_files(dir_path: &Path) -> Result<()> {
