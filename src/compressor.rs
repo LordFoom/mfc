@@ -5,10 +5,14 @@ use rayon::prelude::*;
 use std::fs;
 use std::io::{BufReader, BufWriter};
 use std::{fs::File, path::Path};
+use tar::Builder;
 
 ///Compresses directory contents into SINGLE file
 pub fn compress_directory(dir_path: &Path) -> Result<()> {
-    let tar_name = dir_path.with_extension("gz");
+    let tar_name = dir_path.with_extension("tar");
+    let tar_file = File::create(tar_name)?;
+    let mut tar_archive = Builder::new(tar_file);
+    let dir_entries = std::fs::read_dir(dir_path).iter().for_each(|f| {});
 
     Ok(())
 }
