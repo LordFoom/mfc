@@ -1,6 +1,6 @@
 use anyhow::{Result, anyhow};
-use flate2::Compression;
 use flate2::write::GzEncoder;
+use flate2::{Compression, write};
 use rayon::prelude::*;
 use std::fs;
 use std::io::{BufReader, BufWriter};
@@ -9,10 +9,21 @@ use tar::Builder;
 
 ///Compresses directory contents into SINGLE file
 pub fn compress_directory(dir_path: &Path) -> Result<()> {
+    if !dir_path.exists() {
+        return Err(anyhow!("Cannot compress what does not exist."));
+    }
+
+    if !dir_path.is_dir() {
+        return Err(anyhow!("Can only compress a directory, man."));
+    }
     let tar_name = dir_path.with_extension("tar");
     let tar_file = File::create(tar_name)?;
     let mut tar_archive = Builder::new(tar_file);
-    let dir_entries = std::fs::read_dir(dir_path).iter().for_each(|f| {});
+    for entry in std::fs::read_dir(dir_path)? {
+        let file = entry?;
+        let pth = file.path();
+        tar_archive.append_path(pth);
+    }
 
     Ok(())
 }
