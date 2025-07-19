@@ -5,11 +5,13 @@ use rayon::prelude::*;
 //use std::fmt::Result;
 use std::fs;
 use std::io::{BufReader, BufWriter};
+use std::path::PathBuf;
 use std::{fs::File, path::Path};
 use tar::Builder;
 
 ///Compresses directory contents into a single file, a tar file
-pub fn compress_directory_into_tar(dir_path: &Path) -> Result<String> {
+///Returns path to the tar file
+pub fn compress_directory_into_tar(dir_path: &Path) -> Result<PathBuf> {
     if !dir_path.exists() {
         return Err(anyhow!("Cannot compress what does not exist."));
     }
@@ -18,15 +20,15 @@ pub fn compress_directory_into_tar(dir_path: &Path) -> Result<String> {
         return Err(anyhow!("Can only compress a directory, man."));
     }
     let tar_name = dir_path.with_extension("tar");
-    let tar_file = File::create(tar_name)?;
+    let tar_file = File::create(&tar_name)?;
     let mut tar_archive = Builder::new(tar_file);
     for entry in std::fs::read_dir(dir_path)? {
         let file = entry?;
         let pth = file.path();
         tar_archive.append_path(pth);
     }
-
-    Ok(())
+    tar_archive.finish()?;
+    Ok(tar_name)
 }
 
 pub fn compress_tar_into_gz(tar_path: &Path) -> Result<()> {}
