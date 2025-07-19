@@ -2,13 +2,14 @@ use anyhow::{Result, anyhow};
 use flate2::write::GzEncoder;
 use flate2::{Compression, write};
 use rayon::prelude::*;
+//use std::fmt::Result;
 use std::fs;
 use std::io::{BufReader, BufWriter};
 use std::{fs::File, path::Path};
 use tar::Builder;
 
-///Compresses directory contents into SINGLE file
-pub fn compress_directory(dir_path: &Path) -> Result<()> {
+///Compresses directory contents into a single file, a tar file
+pub fn compress_directory_into_tar(dir_path: &Path) -> Result<String> {
     if !dir_path.exists() {
         return Err(anyhow!("Cannot compress what does not exist."));
     }
@@ -27,6 +28,8 @@ pub fn compress_directory(dir_path: &Path) -> Result<()> {
 
     Ok(())
 }
+
+pub fn compress_tar_into_gz(tar_path: &Path) -> Result<()> {}
 
 ///Compresses each file, separately, in the directory
 pub fn compress_directory_files(dir_path: &Path) -> Result<()> {
