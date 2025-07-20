@@ -4,7 +4,9 @@ use clap::Parser;
 mod args;
 mod compressor;
 use anyhow::Result;
-use compressor::{compress_directory_files, compress_file};
+use compressor::{
+    compress_directory_files, compress_directory_into_tar, compress_file, compress_tar_into_gz,
+};
 
 ///TODO want directory to compress into ONE thing not MANY things
 ///TODO add an approve maybe? I almost burned myself :sweaty:
@@ -17,12 +19,13 @@ fn main() -> Result<()> {
     }
     if path.is_dir() {
         if args.single_file {
-            compress_directory(&path);
+            let tar_path = compress_directory_into_tar(&path)?;
+            compress_tar_into_gz(&tar_path)?;
         } else {
             compress_directory_files(&path)?
         }
     } else {
-        compress_file(&path)?
+        let _ = compress_file(&path)?;
     };
 
     println!("I'mma I'mma Compressorizer, Compressorizer");

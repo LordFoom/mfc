@@ -31,7 +31,19 @@ pub fn compress_directory_into_tar(dir_path: &Path) -> Result<PathBuf> {
     Ok(tar_name)
 }
 
-pub fn compress_tar_into_gz(tar_path: &Path) -> Result<()> {}
+///Takes a path to a tar and creates a gz from it, returning the PathBuf
+pub fn compress_tar_into_gz(tar_path: &Path) -> Result<PathBuf> {
+    if !tar_path.exists() {
+        return Err(anyhow!("Cannot gz what does not exist"));
+    }
+    if tar_path.is_dir() {
+        return Err(anyhow!(
+            "Expected a single file, not a directory: {}",
+            tar_path.to_string_lossy()
+        ));
+    }
+    return compress_file(tar_path);
+}
 
 ///Compresses each file, separately, in the directory
 pub fn compress_directory_files(dir_path: &Path) -> Result<()> {
@@ -66,7 +78,7 @@ pub fn compress_directory_files(dir_path: &Path) -> Result<()> {
     Ok(())
 }
 
-pub fn compress_file(file_path: &Path) -> Result<()> {
+pub fn compress_file(file_path: &Path) -> Result<PathBuf> {
     println!("Compressing {:?}", file_path);
     let source = File::open(file_path)?;
     let compressed_path = file_path.with_extension("gz");
@@ -79,7 +91,7 @@ pub fn compress_file(file_path: &Path) -> Result<()> {
     std::io::copy(&mut reader, &mut writer)?;
     writer.finish()?;
     println!("Compressed file {:?}", compressed_file_name);
-    Ok(())
+    Ok(compressed_path)
 }
 
 #[allow(unused_imports)]
