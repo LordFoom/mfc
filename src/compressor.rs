@@ -1,8 +1,7 @@
 use anyhow::{Result, anyhow};
+use flate2::Compression;
 use flate2::write::GzEncoder;
-use flate2::{Compression, write};
 use rayon::prelude::*;
-//use std::fmt::Result;
 use std::fs;
 use std::io::{BufReader, BufWriter};
 use std::path::PathBuf;
@@ -11,7 +10,7 @@ use tar::Builder;
 
 ///Compresses directory contents into a single file, a tar file
 ///Returns path to the tar file
-pub fn compress_directory_into_tar(dir_path: &Path) -> Result<PathBuf> {
+pub fn compress_directory_into_tar(dir_path: &Path) -> Result<String> {
     if !dir_path.exists() {
         return Err(anyhow!("Cannot compress what does not exist."));
     }
@@ -19,16 +18,18 @@ pub fn compress_directory_into_tar(dir_path: &Path) -> Result<PathBuf> {
     if !dir_path.is_dir() {
         return Err(anyhow!("Can only compress a directory, man."));
     }
-    let tar_name = dir_path.with_extension("tar");
+    let tar_name_full_path = dir_path.with_extension("tar.gz");
+    let tar_name = tar_name_full_path
+        .file_name()
+        .ok_or_else(|| anyhow!("Could not get filename"))?;
+
     let tar_file = File::create(&tar_name)?;
-    let mut tar_archive = Builder::new(tar_file);
-    for entry in std::fs::read_dir(dir_path)? {
-        let file = entry?;
-        let pth = file.path();
-        tar_archive.append_path(pth);
-    }
-    tar_archive.finish()?;
-    Ok(tar_name)
+    let enc = GzEncoder::new(tar_file, Compression::default());
+
+    let mut tar = Builder::new(enc);
+    tar.append_dir_all("", dir_path)?;
+    tar.finish()?;
+    Ok(tar_name.to_string_lossy().into_owned())
 }
 
 ///Takes a path to a tar and creates a gz from it, returning the PathBuf

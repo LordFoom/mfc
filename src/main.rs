@@ -19,8 +19,7 @@ fn main() -> Result<()> {
     }
     if path.is_dir() {
         if args.single_file {
-            let tar_path = compress_directory_into_tar(&path)?;
-            compress_tar_into_gz(&tar_path)?;
+            let tar_file = compress_directory_into_tar(&path)?;
         } else {
             compress_directory_files(&path)?
         }
